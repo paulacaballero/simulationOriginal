@@ -1,10 +1,7 @@
 package simulator;
 
-import java.util.concurrent.PriorityBlockingQueue;
-
 public class Doctor extends Thread {
 
-    private int id;
     private int specialty;
     private WaitingRoom waitingRoom;
 
@@ -13,7 +10,6 @@ public class Doctor extends Thread {
         
         this.specialty = specialty;
         this.waitingRoom = waitingRoom;
-        this.id = id;
     }
     
 

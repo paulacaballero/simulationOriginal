@@ -1,18 +1,14 @@
 package simulator;
 
-import java.util.Random;
-
 public class Patient extends Thread {
 
     private WaitingRoom waitingRoom;
     private int specialty;
     private double priority;
-    private Random rand;
 
     public Patient(WaitingRoom waitingRoom, int id) {
         super("Patient " + id);
         this.waitingRoom = waitingRoom;
-        rand = new Random();
     }
 
     public int getSpecialty() {
