@@ -81,8 +81,9 @@ public class WaitingRoom {
         patientReady.acquire();
         print(doctor,5, ": treating", GREEN);
         Thread.sleep(rand.nextInt(1000) + 1000);
-        doctorDone.release();
+
          // The treatment is done
+        doctorDone.release();
         print(doctor,5, ": treating done", GREEN);
         
         patientDone.acquire();
@@ -93,16 +94,16 @@ public class WaitingRoom {
     public void getsAttended(Patient patient) throws InterruptedException {
         mutex.acquire();
             // The patient is the first in the queue
-            // print(patient,0, ": is the first in the queue");
             patientReady.release();
 
             // Gets treated
             print(patient,5, ": treating", RED);
             doctorDone.acquire();
             
+            // Signals that they're done
             patientDone.release();
             print(patient,5, ": treatment done", RED);
-            // Signals that they're done
+            
             
         mutex.release();
         
@@ -163,7 +164,6 @@ public class WaitingRoom {
         for(Patient patient : queue){
             out += " " + patient.getName() + " |";
         }
-    
         System.out.println(out);
     }
 
