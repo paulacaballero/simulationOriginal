@@ -16,22 +16,17 @@ public class App {
     private Doctor doctors[];
     private Patient patients[];
     private Triage triage[];
-    private PriorityBlockingQueue<Patient>[] queues;
+    private PriorityBlockingQueue<Patient> queue;
     private WaitingRoom waitingRoom;
 
-    @SuppressWarnings("unchecked")
     public App() {
 
         // Initialize the queues
-        queues = new PriorityBlockingQueue[NUMSPECIALTIES];
-        for (int i = 0; i < NUMSPECIALTIES; i++) {
-            queues[i] = new PriorityBlockingQueue<>(
+        queue = new PriorityBlockingQueue<>(
                 10, (t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()) // Descending order by priority
             );
-        }
-
         // Initialize the waiting room
-        waitingRoom = new WaitingRoom(queues);
+        waitingRoom = new WaitingRoom(queue);
 
         // Initialize the doctors
         doctors = new Doctor[NUMSPECIALTIES];

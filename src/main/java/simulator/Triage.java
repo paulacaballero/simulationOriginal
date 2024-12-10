@@ -13,7 +13,7 @@ public class Triage extends Thread {
     public void run() {
         while (!isInterrupted()) {
             try {
-                waitingRoom.validate(this);
+                waitingRoom.initialPatientCheck(this);
             } catch (InterruptedException e) {
                 interrupt();
             }
