@@ -9,8 +9,8 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class App {
 
-    final static int NUMSPECIALTIES = 3;
-    final static int NUMPATIENTS = 10;
+    final static int NUMDOCTOR = 3;
+    final static int NUMPATIENTS = 20;
     final static int NUMTRIAGE = 2;
 
     private Doctor doctors[];
@@ -26,11 +26,11 @@ public class App {
                 10, (t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()) // Descending order by priority
             );
         // Initialize the waiting room
-        waitingRoom = new WaitingRoom(queue);
+        waitingRoom = new WaitingRoom(queue,NUMPATIENTS,NUMDOCTOR);
 
         // Initialize the doctors
-        doctors = new Doctor[NUMSPECIALTIES];
-        for (int i = 0; i < NUMSPECIALTIES; i++) {
+        doctors = new Doctor[NUMDOCTOR];
+        for (int i = 0; i < NUMDOCTOR; i++) {
             doctors[i] = new Doctor(waitingRoom, i, i);
         }
 
@@ -59,7 +59,7 @@ public class App {
         }
 
         // Start doctor threads
-        for (int i = 0; i < NUMSPECIALTIES; i++) {
+        for (int i = 0; i < NUMDOCTOR; i++) {
             doctors[i].start();
         }
         
@@ -73,10 +73,10 @@ public class App {
             }
 
             // Stop doctor threads
-            for (int i = 0; i < NUMSPECIALTIES; i++) {
+            for (int i = 0; i < NUMDOCTOR; i++) {
                 doctors[i].interrupt();
             }
-            for (int i = 0; i < NUMSPECIALTIES; i++) {
+            for (int i = 0; i < NUMDOCTOR; i++) {
                 doctors[i].join();
             }
 
@@ -91,12 +91,17 @@ public class App {
             e.printStackTrace();
         }
     }
-
+    public void calculateAvgWaitingTime(){
+        int waitingMinutes = waitingRoom.getTotalWaitingTime();
+        waitingMinutes = waitingMinutes / NUMPATIENTS;
+        System.out.println("The average waiting time has been "+ waitingMinutes+" minutes.");
+    }
     public static void main(String[] args) {
 
         App app = new App();
 
         app.startThreads();
         app.waitEndOfThreads();
+        app.calculateAvgWaitingTime();
     }
 }

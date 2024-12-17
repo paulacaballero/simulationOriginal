@@ -12,8 +12,7 @@ public class WaitingRoom {
     final static String RED = "\u001B[31m";
     final static String GREEN = "\u001B[32m";
     final static String YELLOW = "\u001B[33m";
-    final static int NUMSPECIALTIES = 3;
-    final static int NUMPATIENTS = 20;
+    private int NUMPATIENTS;
     private Semaphore mutex;
     private Semaphore patientReady;
     private Semaphore doctorDone;
@@ -26,25 +25,28 @@ public class WaitingRoom {
     private PriorityBlockingQueue<Patient> queue;
     private long nextPatientId;
     private int numPatientsWaiting;
+    public int totalWaitingTime;
 
-    public WaitingRoom(PriorityBlockingQueue<Patient> queue) {
+    public WaitingRoom(PriorityBlockingQueue<Patient> queue, int numPatients, int numSpecialties) {
         mutex = new Semaphore(1);
         patientReady = new Semaphore(0);
         doctorDone = new Semaphore(0);
         patientDone = new Semaphore(0);
         patientEntered = new Semaphore(0);
         triageDone = new Semaphore(0);
-        newCase = new Semaphore(0);
+        newCase = new Semaphore(1);
         queueSemaphore = new Semaphore(0);
         rand = new Random();
         this.queue = queue;
         nextPatientId = -1;
         numPatientsWaiting = 0;
+        NUMPATIENTS =  numPatients;
+        totalWaitingTime = 0;
     }
 
     public void register(Patient patient) throws InterruptedException{
 
-            // The patient registers their symptomps
+            // The patient enters the hospital
             print(patient,0, ": enters the waiting room", RED);
             // The triage checks the entering patient
             patientEntered.release();
@@ -52,20 +54,18 @@ public class WaitingRoom {
 
         mutex.acquire();
             // The triage assigns a priority value to the patient
-                patient.setPriority(rand.nextInt(1,5));
+            patient.setPriority(rand.nextInt(1,6));
         
             // Once the triage staff validates the results the patient enters a queue
             print(patient,0, ": has been assigned to the queue with priority " + patient.getPriority(), RED);
             queue.add(patient);
         mutex.release();
-            // Signals that there is a new case in the queue
-            newCase.release();
     }
 
     public void initialPatientCheck(Triage triage) throws InterruptedException{
 
-        // The triage staff checks The vital signs of the patient
         patientEntered.acquire();
+        // The triage staff checks the vital signs of the patient
         Thread.sleep(rand.nextInt(1000));
         print(triage,2, ": a patient is checked by the triage.", YELLOW);
         triageDone.release();
@@ -104,15 +104,25 @@ public class WaitingRoom {
             patientDone.release();
             print(patient,5, ": treatment done", RED);
             
-            
+            calculateWaitingTime(patient);
         mutex.release();
         
     }
+    private void calculateWaitingTime(Patient patient){
+        // We calculate the approximate waiting time, assuming that a patient is treated in 30 minutes
+        double waitingTime = 0;
+        waitingTime = patient.getTurnsWaited() * 30;
+        totalWaitingTime += waitingTime;
+        print(patient, 7, "Waited " + waitingTime + " minutes", RESET);
+    }
     public void waitUntilYourTurn(Patient patient) throws InterruptedException{
         mutex.acquire(); 
-            // While the patient isnt the one that comes out of the queue, wait
             numPatientsWaiting++;
+            // While the patient isnt the one that comes out of the queue, wait
             while(patient.getId() != nextPatientId){
+                int turns = patient.getTurnsWaited();
+                // Everytime a thread exits the loop the ones remaining count one more turn
+                patient.setTurnsWaited(turns + 1);
                 print(patient, 2, ": waits.", RED);
                 mutex.release();
                 queueSemaphore.acquire();
@@ -143,12 +153,13 @@ public class WaitingRoom {
                 print(doctor,2, ": call for the next patient in the queue",GREEN);
                 // All the threads in the doctor's queue are signaled
                 queueSemaphore.release(numPatientsWaiting);
+                
                 mutex.release();
             } else {
                 print(doctor,2, ": there is no patient in the queue.", GREEN);
                 mutex.release();
-                // If there is no patients in the queue the doctor waits until there is a new case
-                newCase.acquire();
+                // If there is no patients in the queue the doctor waits for a fixed time (1 sec) before checking again
+                Thread.sleep(1000);
             }
         } while(patient == null);
         
@@ -165,6 +176,9 @@ public class WaitingRoom {
             out += " " + patient.getName() + " |";
         }
         System.out.println(out);
+    }
+    public int getTotalWaitingTime() {
+        return totalWaitingTime;
     }
 
 }
