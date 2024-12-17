@@ -45,11 +45,11 @@ public class Patient extends Thread {
     @Override
     public void run() {
         try {
-            if(this.getId()%2==0){
+            // if(this.getId()%2==0){
                 Thread.sleep(rand.nextInt(10000));
-            }else{
-                Thread.sleep(rand.nextInt(1000)+4000);
-            }
+            // }else{
+            //     Thread.sleep(rand.nextInt(1000)+4000);
+            // }
             waitingRoom.register(this);
             waitingRoom.waitUntilYourTurn(this);
             waitingRoom.getsAttended(this);

@@ -26,7 +26,7 @@ public class App {
                 10, (t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()) // Descending order by priority
             );
         // Initialize the waiting room
-        waitingRoom = new WaitingRoom(queue,NUMPATIENTS,NUMDOCTOR);
+        waitingRoom = new WaitingRoom(queue, NUMDOCTOR);
 
         // Initialize the doctors
         doctors = new Doctor[NUMDOCTOR];

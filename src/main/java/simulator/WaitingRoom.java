@@ -12,35 +12,33 @@ public class WaitingRoom {
     final static String RED = "\u001B[31m";
     final static String GREEN = "\u001B[32m";
     final static String YELLOW = "\u001B[33m";
-    private int NUMPATIENTS;
     private Semaphore mutex;
     private Semaphore patientReady;
     private Semaphore doctorDone;
     private Semaphore patientDone;
     private Semaphore patientEntered;
     private Semaphore triageDone;
-    private Semaphore newCase;
     private Semaphore queueSemaphore;
     private Random rand;
     private PriorityBlockingQueue<Patient> queue;
     private long nextPatientId;
     private int numPatientsWaiting;
     public int totalWaitingTime;
+    public int NUMDOCTOR;
 
-    public WaitingRoom(PriorityBlockingQueue<Patient> queue, int numPatients, int numSpecialties) {
+    public WaitingRoom(PriorityBlockingQueue<Patient> queue,int numDoctor) {
         mutex = new Semaphore(1);
         patientReady = new Semaphore(0);
         doctorDone = new Semaphore(0);
         patientDone = new Semaphore(0);
         patientEntered = new Semaphore(0);
         triageDone = new Semaphore(0);
-        newCase = new Semaphore(1);
         queueSemaphore = new Semaphore(0);
         rand = new Random();
         this.queue = queue;
         nextPatientId = -1;
         numPatientsWaiting = 0;
-        NUMPATIENTS =  numPatients;
+        NUMDOCTOR = numDoctor;
         totalWaitingTime = 0;
     }
 
@@ -92,7 +90,7 @@ public class WaitingRoom {
     }
 
     public void getsAttended(Patient patient) throws InterruptedException {
-        mutex.acquire();
+        
             // The patient is the first in the queue
             patientReady.release();
 
@@ -103,7 +101,7 @@ public class WaitingRoom {
             // Signals that they're done
             patientDone.release();
             print(patient,5, ": treatment done", RED);
-            
+        mutex.acquire();
             calculateWaitingTime(patient);
         mutex.release();
         
