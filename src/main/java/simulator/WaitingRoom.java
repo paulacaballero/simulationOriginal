@@ -3,6 +3,8 @@ package simulator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +23,7 @@ public class WaitingRoom {
     private Semaphore queueSemaphore;
     private Random rand;
     private PriorityBlockingQueue<Patient> queue;
+    private BlockingQueue<Patient> entranceQueue;
     private long nextPatientId;
     private int numPatientsWaiting;
     public int totalWaitingTime;
@@ -35,6 +38,7 @@ public class WaitingRoom {
         triageDone = new Semaphore(0);
         queueSemaphore = new Semaphore(0);
         rand = new Random();
+        entranceQueue = new LinkedBlockingDeque<>();
         this.queue = queue;
         nextPatientId = -1;
         numPatientsWaiting = 0;
@@ -47,25 +51,32 @@ public class WaitingRoom {
             // The patient enters the hospital
             print(patient,0, ": enters the waiting room", RED);
             // The triage checks the entering patient
+    
+            entranceQueue.add(patient);
             patientEntered.release();
             triageDone.acquire();
 
         mutex.acquire();
-            // The triage assigns a priority value to the patient
-            patient.setPriority(rand.nextInt(1,6));
-        
             // Once the triage staff validates the results the patient enters a queue
             print(patient,0, ": has been assigned to the queue with priority " + patient.getPriority(), RED);
-            queue.add(patient);
         mutex.release();
+
+        queue.add(patient);
     }
 
     public void initialPatientCheck(Triage triage) throws InterruptedException{
 
         patientEntered.acquire();
+        mutex.acquire();
+        printQueue(entranceQueue, YELLOW);
         // The triage staff checks the vital signs of the patient
+        Patient patient = entranceQueue.poll(1, TimeUnit.SECONDS);
+        
+        // The triage assigns a priority value to the patient
+        patient.setPriority(rand.nextInt(1,6));
+        mutex.release();
         Thread.sleep(rand.nextInt(1000));
-        print(triage,2, ": a patient is checked by the triage.", YELLOW);
+        print(triage,2, ":" + patient.getName() + " is checked by the triage.", YELLOW);
         triageDone.release();
         
     }
@@ -114,23 +125,33 @@ public class WaitingRoom {
         print(patient, 7, "Waited " + waitingTime + " minutes", RESET);
     }
     public void waitUntilYourTurn(Patient patient) throws InterruptedException{
+        boolean out = false;
         mutex.acquire(); 
             numPatientsWaiting++;
+        mutex.release();
             // While the patient isnt the one that comes out of the queue, wait
-            while(patient.getId() != nextPatientId){
+            do{
+                mutex.acquire();
+                
                 int turns = patient.getTurnsWaited();
                 // Everytime a thread exits the loop the ones remaining count one more turn
                 patient.setTurnsWaited(turns + 1);
+                // System.out.println("turns:" + patient.getTurnsWaited()); //test
                 print(patient, 2, ": waits.", RED);
                 mutex.release();
-                queueSemaphore.acquire();
-            }
 
+                queueSemaphore.acquire();
+
+                mutex.acquire();
+                out = patient.getId() == nextPatientId;
+                mutex.release();
+            } while(out == false);
+        //     mutex.release();
         mutex.acquire();
         // Since the thread exited the queue one less is waiting
             numPatientsWaiting--;
             print(patient,3, ": turn arrived.", RED);
-            printWaitingRoom();
+            printQueue(queue, RED);
         mutex.release();
         
     }
@@ -142,7 +163,7 @@ public class WaitingRoom {
         // The doctor will remain in the loop until there is a patient in their queue
         do{
             mutex.acquire();
-            printWaitingRoom();
+            printQueue(queue, GREEN);
             // We take the patient with the highest priority from the queue of the doctor, with a timeout of 1 second
             patient = queue.poll(1, TimeUnit.SECONDS);
             if (patient != null) {
@@ -168,12 +189,12 @@ public class WaitingRoom {
         String gap = new String(new char[id + 1]).replace('\0', '\t');
         System.out.println(gap + color + "🖥️" + id + " " + thread.getName() + ": " + msg + RESET);
     }
-    private void printWaitingRoom(){
+    private void printQueue(BlockingQueue<Patient> blockingQueue, String color){
         String out = new String();
-        for(Patient patient : queue){
+        for(Patient patient : blockingQueue){
             out += " " + patient.getName() + " |";
         }
-        System.out.println(out);
+        System.out.println(color + out + RESET);
     }
     public int getTotalWaitingTime() {
         return totalWaitingTime;

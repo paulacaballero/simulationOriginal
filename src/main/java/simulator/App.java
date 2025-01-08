@@ -10,12 +10,12 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class App {
 
     final static int NUMDOCTOR = 3;
-    final static int NUMPATIENTS = 20;
+    final static int NUMPATIENTS = 30;
     final static int NUMTRIAGE = 2;
 
-    private Doctor doctors[];
-    private Patient patients[];
-    private Triage triage[];
+    private Doctor[] doctors;
+    private Patient[] patients;
+    private Triage[] triage;
     private PriorityBlockingQueue<Patient> queue;
     private WaitingRoom waitingRoom;
 
@@ -23,8 +23,8 @@ public class App {
 
         // Initialize the queues
         queue = new PriorityBlockingQueue<>(
-                10, (t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()) // Descending order by priority
-            );
+            NUMPATIENTS, (t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()) // Descending order by priority
+        );
         // Initialize the waiting room
         waitingRoom = new WaitingRoom(queue, NUMDOCTOR);
 
@@ -71,7 +71,6 @@ public class App {
             for (int i = 0; i < NUMPATIENTS; i++) {
                 patients[i].join();
             }
-
             // Stop doctor threads
             for (int i = 0; i < NUMDOCTOR; i++) {
                 doctors[i].interrupt();
@@ -79,7 +78,6 @@ public class App {
             for (int i = 0; i < NUMDOCTOR; i++) {
                 doctors[i].join();
             }
-
             // Stop triage threads
             for (int i = 0; i < NUMTRIAGE; i++) {
                 triage[i].interrupt();

@@ -2,7 +2,7 @@ package simulator;
 
 import java.util.Random;
 
-public class Patient extends Thread {
+public class Patient extends Thread{
 
     private WaitingRoom waitingRoom;
     private int specialty;
@@ -45,11 +45,9 @@ public class Patient extends Thread {
     @Override
     public void run() {
         try {
-            // if(this.getId()%2==0){
-                Thread.sleep(rand.nextInt(10000));
-            // }else{
-            //     Thread.sleep(rand.nextInt(1000)+4000);
-            // }
+            
+            Thread.sleep(rand.nextInt(10000));
+            
             waitingRoom.register(this);
             waitingRoom.waitUntilYourTurn(this);
             waitingRoom.getsAttended(this);
