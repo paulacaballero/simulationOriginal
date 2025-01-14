@@ -12,10 +12,12 @@ public class App {
     final static int NUMDOCTOR = 3;
     final static int NUMPATIENTS = 30;
     final static int NUMTRIAGE = 2;
+    final static int NUMNURSES = 5;
 
     private Doctor[] doctors;
     private Patient[] patients;
     private Triage[] triage;
+    private Nurse[] nurses;
     private PriorityBlockingQueue<Patient> queue;
     private WaitingRoom waitingRoom;
 
@@ -40,6 +42,11 @@ public class App {
             patients[i] = new Patient(waitingRoom, i);
         }
 
+        nurses = new Nurse[NUMNURSES];
+        for (int i = 0; i < NUMNURSES; i++){
+            nurses[i] = new Nurse(waitingRoom, i);
+        }
+
         // Initialize the triage
         triage = new Triage[NUMTRIAGE];
         for(int i = 0; i < NUMTRIAGE; i++){
@@ -58,6 +65,9 @@ public class App {
             triage[i].start();
         }
 
+        for (int i = 0; i < NUMNURSES; i++){
+            nurses[i].start();
+        }
         // Start doctor threads
         for (int i = 0; i < NUMDOCTOR; i++) {
             doctors[i].start();
@@ -71,6 +81,15 @@ public class App {
             for (int i = 0; i < NUMPATIENTS; i++) {
                 patients[i].join();
             }
+
+            // Stop nurse threads
+            for (int i = 0; i < NUMNURSES; i++){
+                nurses[i].interrupt();
+            }
+            for (int i = 0; i < NUMNURSES; i++){
+                nurses[i].join();
+            }
+            
             // Stop doctor threads
             for (int i = 0; i < NUMDOCTOR; i++) {
                 doctors[i].interrupt();
@@ -78,6 +97,7 @@ public class App {
             for (int i = 0; i < NUMDOCTOR; i++) {
                 doctors[i].join();
             }
+
             // Stop triage threads
             for (int i = 0; i < NUMTRIAGE; i++) {
                 triage[i].interrupt();

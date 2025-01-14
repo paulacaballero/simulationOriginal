@@ -24,6 +24,7 @@ public class Doctor extends Thread {
     public void run() {
         while (!isInterrupted()) {
             try {
+                // They attend patients in their queues
                 waitingRoom.attend(this);
             } catch (InterruptedException e) {
                 interrupt();
