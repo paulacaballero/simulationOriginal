@@ -106,7 +106,7 @@ public class App {
                 triage[i].join();
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
     public void calculateAvgWaitingTime(){

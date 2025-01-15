@@ -1,6 +1,6 @@
 package simulator;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -8,23 +8,23 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class WaitingRoom {
-    final static String RESET = "\u001B[0m";
-    final static String RED = "\u001B[31m";
-    final static String GREEN = "\u001B[32m";
-    final static String YELLOW = "\u001B[33m";
-    final static String ORANGE = "\u001B[34m";
-    final static String PURPLE = "\u001B[35m";
+    static final  String RESET = "\u001B[0m";
+    static final String RED = "\u001B[31m";
+    static final String GREEN = "\u001B[32m";
+    static final String YELLOW = "\u001B[33m";
+    static final String ORANGE = "\u001B[34m";
+    static final String PURPLE = "\u001B[35m";
     private Semaphore mutex;
     private Semaphore[] patientReady;
     private Semaphore[] doctorDone;
     private Semaphore[] patientDone;
-    private Semaphore patientEntered;
-    private Semaphore triageDone;
-    private Semaphore[] caseInQueue;
-    private Random rand;
+    Semaphore patientEntered;
+    Semaphore triageDone;
+    Semaphore[] caseInQueue;
+    private SecureRandom rand;
     private PriorityBlockingQueue<Patient> generalQueue;
-    private PriorityBlockingQueue<Patient>[] doctorQueue;
-    private BlockingQueue<Patient> entranceQueue;
+    PriorityBlockingQueue<Patient>[] doctorQueue;
+    BlockingQueue<Patient> entranceQueue;
     private int numPatientsOutofGeneral;
     private int[] numPatientsOutofDoctor;
     public int totalWaitingTime;
@@ -37,7 +37,7 @@ public class WaitingRoom {
         patientEntered = new Semaphore(0);
         triageDone = new Semaphore(0);
         caseInQueue = new Semaphore[numDoctor];
-        rand = new Random();
+        rand = new SecureRandom();
         entranceQueue = new LinkedBlockingQueue<>();
         doctorQueue = new PriorityBlockingQueue[numDoctor];
         patientReady = new Semaphore[numDoctor];
@@ -114,7 +114,7 @@ public class WaitingRoom {
         // The doctor waits until the patient signals them back
         patientReady[specialty].acquire();
         print(doctor, 5, ": treating", GREEN);
-        Thread.sleep(rand.nextInt(1000) + 1000);
+        Thread.sleep((long)rand.nextInt(1000) + 1000);
 
         // The treatment is done
         doctorDone[specialty].release();
@@ -153,7 +153,7 @@ public class WaitingRoom {
 
     }
 
-    private void calculateWaitingTime(Patient patient) {
+    void calculateWaitingTime(Patient patient) {
         // We calculate the approximate waiting time
         double waitingTime = 0;
         waitingTime = patient.getWaitingTime();

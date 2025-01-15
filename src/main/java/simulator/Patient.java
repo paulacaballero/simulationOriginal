@@ -1,6 +1,6 @@
 package simulator;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.concurrent.Semaphore;
 
 public class Patient extends Thread{
@@ -10,7 +10,7 @@ public class Patient extends Thread{
     private int waitingTime;
     private Semaphore doctorQSemaphore;
     private Semaphore generalQSemaphore;
-    private Random rand;
+    private SecureRandom rand;
 
     public Patient(WaitingRoom waitingRoom, int id) {
         super("Patient " + id);
@@ -18,7 +18,7 @@ public class Patient extends Thread{
         waitingTime = 0;
         doctorQSemaphore = new Semaphore(0);
         generalQSemaphore = new Semaphore(0);
-        rand = new Random();
+        rand = new SecureRandom();
     }
 
     
@@ -52,8 +52,8 @@ public class Patient extends Thread{
     public void run() {
         try {
             // This is a way to scatter the patients in time
-            if(this.getId() % 2 == 0)
-                Thread.sleep(rand.nextInt(10000) + 2000);
+            if (this.getId() % 2 == 0)
+                Thread.sleep((long) rand.nextInt(10000) + 2000);            
             else
                 Thread.sleep(rand.nextInt(10000));
             
@@ -64,6 +64,7 @@ public class Patient extends Thread{
             // Finally gets attended by a doctor
             waitingRoom.getsAttended(this);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
