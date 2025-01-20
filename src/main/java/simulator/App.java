@@ -20,10 +20,12 @@ public class App {
     private Nurse[] nurses;
     private PriorityBlockingQueue<Patient> queue;
     private WaitingRoom waitingRoom;
+    private ServiceStation serviceStation;
 
     public App() {
 
         // Initialize the queues
+        serviceStation = new ServiceStation();
         queue = new PriorityBlockingQueue<>(
             NUMPATIENTS, (t1, t2) -> Integer.compare(t2.getPriority(), t1.getPriority()) // Descending order by priority
         );
@@ -33,7 +35,8 @@ public class App {
         // Initialize the doctors
         doctors = new Doctor[NUMDOCTOR];
         for (int i = 0; i < NUMDOCTOR; i++) {
-            doctors[i] = new Doctor(waitingRoom, i, i);
+            int priority = (i % 3) + 1; // Asignar prioridad (1, 2, o 3)
+            doctors[i] = new Doctor(waitingRoom, i, i, priority, serviceStation);
         }
 
         // Initialize the patients

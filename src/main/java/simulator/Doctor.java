@@ -1,53 +1,52 @@
 package simulator;
 
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.PriorityBlockingQueue;
 
-public class Doctor extends Thread {
-
+public class Doctor extends Thread implements Comparable<Doctor> {
     private int specialty;
+    private int priorityDoc; // Nivel de prioridad
     private WaitingRoom waitingRoom;
-    private int materialCount;
-    private static final int MAX_MATERIAL = 3;
-    private static Semaphore supplyStation = new Semaphore(2);
+    private ServiceStation serviceStation; // Referencia a la estación de reposición
+    private int materials;
 
-    public Doctor(WaitingRoom waitingRoom, int specialty, int id) {
+    public Doctor(WaitingRoom waitingRoom, int specialty, int id, int priorityDoc, ServiceStation serviceStation) {
         super("Doctor " + id);
         this.specialty = specialty;
+        this.priorityDoc = priorityDoc;
         this.waitingRoom = waitingRoom;
-        this.materialCount = MAX_MATERIAL; 
+        this.serviceStation = serviceStation;
+        this.materials = 3; // Inicia con materiales para 3 pacientes
     }
 
     public int getSpecialty() {
         return specialty;
     }
+    public int getPriorityDoc() {
+        return priorityDoc;
+    }
 
-    public void setSpecialty(int specialty) {
-        this.specialty = specialty;
+    
+    @Override
+    public int compareTo(Doctor other) {
+        // Comparación para la cola de prioridad: menor valor = mayor prioridad
+        return Integer.compare(this.priorityDoc, other.priorityDoc);
     }
 
     @Override
     public void run() {
         while (!isInterrupted()) {
             try {
-                if (materialCount == 0) {
-                    restockMaterials();
+                if (materials == 0) {
+                    // Si no hay materiales, ir a la estación de reposición
+                    serviceStation.restockMaterials(this);
+                    materials = 3; // Recupera materiales para 3 pacientes
                 }
-                // They attend patients in their queues
+                // Atender pacientes
                 waitingRoom.attend(this);
-                materialCount--;
+                materials--; // Consume un material por paciente
             } catch (InterruptedException e) {
                 interrupt();
             }
         }
-    }
-
-    private void restockMaterials() throws InterruptedException {
-        System.out.println(getName() + " is out of materials and needs to restock.");
-        supplyStation.acquire(); 
-        System.out.println(getName() + " is restocking materials.");
-        Thread.sleep(2000);
-        materialCount = MAX_MATERIAL; 
-        System.out.println(getName() + " has restocked materials and can treat more patients.");
-        supplyStation.release(); 
     }
 }
