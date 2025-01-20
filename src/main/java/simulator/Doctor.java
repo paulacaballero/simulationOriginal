@@ -1,12 +1,11 @@
 package simulator;
 
-import java.util.concurrent.PriorityBlockingQueue;
 
 public class Doctor extends Thread implements Comparable<Doctor> {
     private int specialty;
-    private int priorityDoc; // Nivel de prioridad
+    private int priorityDoc; 
     private WaitingRoom waitingRoom;
-    private ServiceStation serviceStation; // Referencia a la estación de reposición
+    private ServiceStation serviceStation; 
     private int materials;
 
     public Doctor(WaitingRoom waitingRoom, int specialty, int id, int priorityDoc, ServiceStation serviceStation) {
@@ -15,7 +14,7 @@ public class Doctor extends Thread implements Comparable<Doctor> {
         this.priorityDoc = priorityDoc;
         this.waitingRoom = waitingRoom;
         this.serviceStation = serviceStation;
-        this.materials = 3; // Inicia con materiales para 3 pacientes
+        this.materials = 3;
     }
 
     public int getSpecialty() {
@@ -28,7 +27,6 @@ public class Doctor extends Thread implements Comparable<Doctor> {
     
     @Override
     public int compareTo(Doctor other) {
-        // Comparación para la cola de prioridad: menor valor = mayor prioridad
         return Integer.compare(this.priorityDoc, other.priorityDoc);
     }
 
@@ -37,13 +35,11 @@ public class Doctor extends Thread implements Comparable<Doctor> {
         while (!isInterrupted()) {
             try {
                 if (materials == 0) {
-                    // Si no hay materiales, ir a la estación de reposición
                     serviceStation.restockMaterials(this);
-                    materials = 3; // Recupera materiales para 3 pacientes
+                    materials = 3; 
                 }
-                // Atender pacientes
                 waitingRoom.attend(this);
-                materials--; // Consume un material por paciente
+                materials--; 
             } catch (InterruptedException e) {
                 interrupt();
             }
