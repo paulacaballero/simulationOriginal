@@ -29,6 +29,7 @@ public class WaitingRoom {
     private int[] numPatientsOutofDoctor;
     public int totalWaitingTime;
     public int NUMDOCTOR;
+    public int NUMSPECIALTY;
 
     @SuppressWarnings("unchecked")
     public WaitingRoom(PriorityBlockingQueue<Patient> queue, int numDoctor) {
@@ -58,6 +59,7 @@ public class WaitingRoom {
         numPatientsOutofGeneral = 0;
         NUMDOCTOR = numDoctor;
         totalWaitingTime = 0;
+        NUMSPECIALTY=3;
     }
 
     public void register(Patient patient) throws InterruptedException {
@@ -192,7 +194,7 @@ public class WaitingRoom {
             if (patient != null) {
                 print(nurse, 2, ": " + patient.getName() + " is attended by the nurse.", PURPLE);
                 // The nurse attends the patients and assigns them to a doctor (specialty)
-                patient.setSpecialty(rand.nextInt(NUMDOCTOR));
+                patient.setSpecialty(rand.nextInt(NUMSPECIALTY));
 
                 // And adds them to the queue of the respective doctor
                 doctorQueue[patient.getSpecialty()].add(patient);

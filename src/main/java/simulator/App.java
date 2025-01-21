@@ -9,7 +9,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class App {
 
-    final static int NUMDOCTOR = 3;
+    final static int NUMDOCTOR = 4;
     final static int NUMPATIENTS = 30;
     final static int NUMTRIAGE = 2;
     final static int NUMNURSES = 5;
@@ -35,8 +35,9 @@ public class App {
         // Initialize the doctors
         doctors = new Doctor[NUMDOCTOR];
         for (int i = 0; i < NUMDOCTOR; i++) {
-            int priority = (i % 3) + 1; // Asignar prioridad (1, 2, o 3)
-            doctors[i] = new Doctor(waitingRoom, i, i, priority, serviceStation);
+            int priority = (i % 3) + 1; // Priority (1, 2, o 3)
+            int specialty = i % 3; //Specialty 0, 1 y 2
+            doctors[i] = new Doctor(waitingRoom, specialty, i, priority, serviceStation);
         }
 
         // Initialize the patients
