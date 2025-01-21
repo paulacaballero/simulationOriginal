@@ -1,5 +1,8 @@
 package simulator;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
@@ -9,10 +12,10 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class App {
 
-    final static int NUMDOCTOR = 4;
-    final static int NUMPATIENTS = 30;
+    final static int NUMDOCTOR = 10;
+    final static int NUMPATIENTS = 20;
     final static int NUMTRIAGE = 2;
-    final static int NUMNURSES = 5;
+    final static int NUMNURSES = 10;
 
     private Doctor[] doctors;
     private Patient[] patients;
@@ -113,17 +116,28 @@ public class App {
             e.printStackTrace();
         }
     }
-    public void calculateAvgWaitingTime(){
+public void calculateAvgWaitingTime() {
         int waitingMinutes = waitingRoom.getTotalWaitingTime();
         waitingMinutes = waitingMinutes / NUMPATIENTS;
-        System.out.println("The average waiting time has been "+ waitingMinutes+" minutes.");
+        saveAverageWaitingTimeToFile(waitingMinutes);
+    }
+
+    private void saveAverageWaitingTimeToFile(int averageWaitingTime) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/results/10doc20patOri.txt", true))) {
+            writer.write(String.valueOf(averageWaitingTime));
+            writer.newLine();
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
     }
     public static void main(String[] args) {
+        for(int i =0; i<5;i++){
+            App app = new App();
 
-        App app = new App();
+            app.startThreads();
+            app.waitEndOfThreads();
+            app.calculateAvgWaitingTime();
+        }
 
-        app.startThreads();
-        app.waitEndOfThreads();
-        app.calculateAvgWaitingTime();
     }
 }
