@@ -14,8 +14,8 @@ public class App {
 
     final static int NUMDOCTOR = 10;
     final static int NUMPATIENTS = 20;
-    final static int NUMTRIAGE = 2;
-    final static int NUMNURSES = 5;
+    final static int NUMTRIAGE = 5;
+    final static int NUMNURSES = 10;
     final static int NUMSPECIALTY = 10;
 
     private Doctor[] doctors;
@@ -132,7 +132,7 @@ public void calculateAvgWaitingTime() {
         }
     }
     public static void main(String[] args) {
-        for(int i =0; i<5;i++){
+        for(int i =0; i<1;i++){
             App app = new App();
 
             app.startThreads();
