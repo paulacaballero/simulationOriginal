@@ -84,7 +84,7 @@ public class WaitingRoom {
         patientEntered.acquire();
         mutex.acquire();
         // The triage staff checks the vital signs of the patient
-        Patient patient = entranceQueue.poll(1, TimeUnit.SECONDS);
+        Patient patient = entranceQueue.take();
 
         // The triage assigns a priority value to the patient
         patient.setPriority(rand.nextInt(1, 6));
@@ -107,7 +107,7 @@ public class WaitingRoom {
         mutex.acquire();
         printQueue(doctorQueue[specialty], ORANGE);
         // The doctor takes a patient from their queue
-        Patient patient = doctorQueue[specialty].poll();
+        Patient patient = doctorQueue[specialty].take();
         // and wakes them up
         patient.getDoctorQSemaphore().release();
         mutex.release();
