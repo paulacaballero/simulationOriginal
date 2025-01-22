@@ -29,6 +29,7 @@ public class WaitingRoom {
     private int[] numPatientsOutofDoctor;
     public int totalWaitingTime;
     public int NUMDOCTOR;
+    public int NUMSPECIALTY;
 
     @SuppressWarnings("unchecked")
     public WaitingRoom(PriorityBlockingQueue<Patient> queue, int numDoctor) {
@@ -58,6 +59,7 @@ public class WaitingRoom {
         numPatientsOutofGeneral = 0;
         NUMDOCTOR = numDoctor;
         totalWaitingTime = 0;
+        NUMSPECIALTY=3;
     }
 
     public void register(Patient patient) throws InterruptedException {
@@ -128,9 +130,13 @@ public class WaitingRoom {
     public void getsAttended(Patient patient) throws InterruptedException {
 
         // Waits until the doctor signals that is their turn
+        int specialty = patient.getSpecialty();
+        mutex.acquire();
+        int peopleBefore = numPatientsOutofDoctor[specialty];
+        mutex.release();
+        
         patient.getDoctorQSemaphore().acquire();
 
-        int specialty = patient.getSpecialty();
         patientReady[specialty].release();
 
         // Gets treated
@@ -145,7 +151,7 @@ public class WaitingRoom {
         // Calculates how much they have been waiting for their turn based on the quantity 
         // of patients their doctor has treated before them
         int waitedTime = patient.getWaitingTime();
-        patient.setWaitingTime(waitedTime + (numPatientsOutofDoctor[specialty] * 30));
+        patient.setWaitingTime(waitedTime + ((numPatientsOutofDoctor[specialty]-peopleBefore) * 30));
         numPatientsOutofDoctor[specialty]++;
         // As this is the last step of the patient before leaving the waited time is added to the overall waiting time
         calculateWaitingTime(patient);
@@ -163,15 +169,19 @@ public class WaitingRoom {
 
     public void waitUntilYourTurn(Patient patient) throws InterruptedException {
 
+        mutex.acquire();
+        int peopleBefore = numPatientsOutofGeneral;
+        mutex.release();
         print(patient, 2, ": waits.", RED);
         // Wait until a nurse signals that is their turn to be attended by them
+
         patient.getGeneralQSemaphore().acquire();
 
         mutex.acquire();
         // Calculates how much time they have been waiting in the general queue for their turn based on
         // the quantity of patients that have already been treated
         int waitedTime = patient.getWaitingTime();
-        patient.setWaitingTime(waitedTime + 20 * numPatientsOutofGeneral);
+        patient.setWaitingTime(waitedTime + 20 * (numPatientsOutofGeneral-peopleBefore));
         numPatientsOutofGeneral++;
         mutex.release();
         print(patient, 3, ": turn arrived.", RED);
@@ -192,7 +202,7 @@ public class WaitingRoom {
             if (patient != null) {
                 print(nurse, 2, ": " + patient.getName() + " is attended by the nurse.", PURPLE);
                 // The nurse attends the patients and assigns them to a doctor (specialty)
-                patient.setSpecialty(rand.nextInt(NUMDOCTOR));
+                patient.setSpecialty(rand.nextInt(NUMSPECIALTY));
 
                 // And adds them to the queue of the respective doctor
                 doctorQueue[patient.getSpecialty()].add(patient);
